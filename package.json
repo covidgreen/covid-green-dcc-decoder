@@ -1,0 +1,62 @@
+{
+  "name": "dcc-decoder",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "test": "env-cmd -f .env jest",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --fix --ext .js,.ts",
+    "typecheck": "tsc",
+    "rule": "node rules/run",
+    "all-qrs": "env-cmd -f .env ts-node -r tsconfig-paths/register all-qrs"
+  },
+  "dependencies": {
+    "base45": "^3.0.0",
+    "buffer": "^6.0.3",
+    "cbor": "^3.0.3",
+    "certlogic-js": "^0.7.7",
+    "cose-js": "^0.6.0",
+    "date-fns": "^2.22.1",
+    "node-fetch": "^2.6.1",
+    "node-rsa": "^1.1.1",
+    "pako": "^1.0.11",
+    "process": "^0.11.10",
+    "tiny-json-validator": "^2.0.0",
+    "util": "^0.12.4",
+    "utility-types": "^3.10.0"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-runtime": "^7.15.0",
+    "@babel/preset-env": "^7.15.0",
+    "@babel/preset-typescript": "^7.15.0",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.12.4",
+    "@typescript-eslint/eslint-plugin": "^3.1.0",
+    "@typescript-eslint/parser": "^3.1.0",
+    "babel-jest": "^27.0.6",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "cli-table": "^0.3.6",
+    "env-cmd": "^10.1.0",
+    "eslint": "^7.27.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-import": "^2.23.2",
+    "eslint-plugin-jest": "^22.4.1",
+    "eslint-plugin-prettier": "^3.1.2",
+    "husky": "^6.0.0",
+    "jest": "^26.6.3",
+    "jsqr": "^1.4.0",
+    "lint-staged": "^11.0.0",
+    "octokit": "^1.4.0",
+    "pngjs": "^6.0.0",
+    "prettier": "^2.3.0",
+    "ts-jest": "^26.5.6",
+    "ts-node": "^10.2.0",
+    "typescript": "<4.1.0"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "lint-staged"
+    }
+  }
+}
