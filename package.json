@@ -1,7 +1,6 @@
 {
   "name": "dcc-decoder",
   "version": "0.0.1",
-  "private": true,
   "scripts": {
     "test": "env-cmd -f .env jest",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
