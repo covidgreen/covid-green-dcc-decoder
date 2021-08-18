@@ -58,5 +58,21 @@
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
       "pre-commit": "lint-staged"
     }
-  }
+  },
+  "description": "## Setup 1. `git clone git@github.com:covidgreen/covid-green-dcc-decoder.git && cd covid-green-dcc-decoder` 2. `npm i`",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/covidgreen/covid-green-dcc-decoder.git"
+  },
+  "keywords": [
+    "DCC",
+    "decoding"
+  ],
+  "author": "NearForm",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/covidgreen/covid-green-dcc-decoder/issues"
+  },
+  "homepage": "https://github.com/covidgreen/covid-green-dcc-decoder#readme"
 }
