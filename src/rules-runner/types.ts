@@ -34,6 +34,7 @@ export type ExternalParameters = {
  * A type representing the data context passed to every rule.
  */
 export type RuleEvaluationDataContext = {
+  // eslint-disable-next-line
   payload: any
   external: ExternalParameters
 }

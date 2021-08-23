@@ -1,6 +1,6 @@
-import { RuleSet } from '../lib/rules-runner/types'
+import { RuleSet, ValueSetsComputed } from '../rules-runner/types'
 
-import { CertificateContent } from './hcert'
+import { CertificateContent, CERT_TYPE } from './hcert'
 
 export type Valueset = {
   display: string
@@ -31,15 +31,23 @@ export type SigningKey = {
 
 export type SigningKeys = SigningKey[]
 
-export type Options = {
+export type DCCData = {
   signingKeys: SigningKeys
   valueSets?: Valuesets
   ruleSet?: RuleSet
-  ruleLang?: string
-  ruleCountry?: string
+  valuesetsComputed?: ValueSetsComputed
 }
 
 export type VerificationResult = {
-  cert: CertificateContent
-  ruleErrors: string[]
+  rawCert?: CertificateContent
+  cert?: CertificateContent
+  ruleErrors?: string[]
+  type?: CERT_TYPE
+  error?: Error
+}
+
+export type InputSource = {
+  qrData?: string
+  image?: Buffer
+  pdf: Buffer
 }

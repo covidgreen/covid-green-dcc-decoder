@@ -1,0 +1,42 @@
+name: Run Tests / Verify Linting
+
+on:
+  push:
+    branches:
+      main
+  pull_request:
+
+jobs:
+  run-tests:
+    name: Run All Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ 14.x ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Running tests with node ${{ matrix.node-version }}
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm test
+
+  verify-lint:
+    name: Enforce Linting Rules
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ 14.x ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Running lint with node ${{ matrix.node-version }}
+        uses: actions/setup-node@v2.2.0
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run lint
+      
+

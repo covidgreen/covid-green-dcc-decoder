@@ -1,10 +1,53 @@
-import { ValueSetsComputed, RuleSet } from './lib/rules-runner/types'
-import decodeQR from './lib/verifier'
-import { CertificateContent } from './types/hcert'
-import { runRuleSet } from './lib/rules-runner'
-import { Options, VerificationResult, SigningKeys, Valuesets } from './types'
+import { ValueSetsComputed, RuleSet } from './rules-runner/types'
+import decodeQR from './verifier'
+import { runRuleSet } from './rules-runner'
+import {
+  DCCData,
+  VerificationResult,
+  SigningKeys,
+  Valuesets,
+  InputSource,
+} from './types'
+import { getDCCData, populateCertValues } from './util'
+import { extractQRFromImage, extractQRFromPDF } from './decode'
 
-const getValuesetsComputed = (valuesets): ValueSetsComputed => {
+let loadedDataSet: DCCData
+
+const findQRData = async (source: InputSource): Promise<string> => {
+  let qrSource = source.qrData
+  if (source.image) {
+    qrSource = await extractQRFromImage(source.image)
+  } else if (source.pdf) {
+    qrSource = await extractQRFromPDF(source.pdf)
+  }
+
+  return qrSource
+}
+
+const decodeOnly = async (inputs: {
+  source: InputSource
+  dccData?: DCCData
+}): Promise<VerificationResult> => {
+  const dcc = inputs.dccData || loadedDataSet
+  if (!(dcc && dcc.signingKeys)) {
+    throw new Error('You must provide keys')
+  }
+  if (!(dcc && dcc.valueSets)) {
+    throw new Error('You must provide value sets')
+  }
+
+  const qrSource = await findQRData(inputs.source)
+
+  const result = await decodeQR(qrSource, dcc.signingKeys)
+
+  if (result.rawCert) {
+    result.cert = populateCertValues(result.rawCert, result.type, dcc.valueSets)
+  }
+
+  return result
+}
+
+const buildValuesetsComputed = (valuesets): ValueSetsComputed => {
   return Object.keys(valuesets).reduce((acc, key) => {
     acc[valuesets[key].valueSetId] = Object.keys(valuesets[key].valueSetValues)
 
@@ -12,79 +55,61 @@ const getValuesetsComputed = (valuesets): ValueSetsComputed => {
   }, {})
 }
 
-const decodeAndValidateRules = async (
-  qrData: string,
-  options: Options
-): Promise<VerificationResult> => {
-  if (!options.signingKeys) {
-    throw new Error('You must provide keys')
-  }
-  if (!options.valueSets) {
-    throw new Error('You must provide value sets')
+const loadDCCConfigData = async (url): Promise<DCCData> => {
+  loadedDataSet = await getDCCData(url)
+  return loadedDataSet
+}
+
+const decodeAndValidateRules = async (inputs: {
+  source: InputSource
+  ruleCountry: string
+  ruleLang?: string | 'en'
+  dccData?: DCCData
+}): Promise<VerificationResult> => {
+  const result = await decodeOnly(inputs)
+
+  if (result.error) {
+    return result
   }
 
-  const { cert, error } = await decodeQR(qrData, options.signingKeys)
-
-  if (error) {
-    throw error
-  }
+  const dcc = inputs.dccData || loadedDataSet
 
   const ruleErrors = []
-  const ruleset = options.ruleSet && options.ruleSet[options.ruleCountry]
+  const ruleset = dcc.ruleSet && dcc.ruleSet[inputs.ruleCountry]
 
   if (ruleset) {
-    const valuesetsComputed: ValueSetsComputed = getValuesetsComputed(
-      options.valueSets
-    )
+    const results = runRuleSet(ruleset, {
+      payload: result.rawCert,
+      external: {
+        valueSets: dcc.valuesetsComputed || loadedDataSet.valuesetsComputed,
+        validationClock: new Date().toISOString(),
+      },
+    })
+    // console.log('RESULTS:', results)
 
-    try {
-      const results = runRuleSet(ruleset, {
-        payload: cert,
-        external: {
-          valueSets: valuesetsComputed,
-          validationClock: new Date().toISOString(),
-        },
+    if (results && !results.allSatisfied) {
+      Object.keys(results?.ruleEvaluations || {}).forEach(ruleId => {
+        const ruleResult = results?.ruleEvaluations[ruleId]
+        const rule = ruleset.find(r => r.Identifier === ruleId)
+
+        if (ruleResult === false || ruleResult instanceof Error) {
+          const desc =
+            rule?.Description?.find(d => d.lang === inputs.ruleLang) ??
+            rule?.Description?.find(d => d.lang === 'en')
+          ruleErrors.push({ id: ruleId, description: desc?.desc ?? ruleId })
+        }
       })
-      console.log('RESULTS:', results)
-
-      if (results && !results.allSatisfied) {
-        Object.keys(results?.ruleEvaluations || {}).forEach(ruleId => {
-          const ruleResult = results?.ruleEvaluations[ruleId]
-          const rule = ruleset.find(r => r.Identifier === ruleId)
-
-          if (ruleResult === false || ruleResult instanceof Error) {
-            const desc =
-              rule?.Description?.find(d => d.lang === options.ruleLang) ??
-              rule?.Description?.find(d => d.lang === 'en')
-            ruleErrors.push(desc?.desc ?? ruleId)
-          }
-        })
-      }
-    } catch (err) {
-      console.log(err)
-      throw err
     }
   }
 
-  return { cert, ruleErrors }
+  return { ...result, ruleErrors }
 }
 
-const decodeOnly = async (
-  qrData: string,
-  options: Options
-): Promise<CertificateContent> => {
-  if (!options.signingKeys) {
-    throw new Error('You must provide keys')
-  }
-  const { cert, error } = await decodeQR(qrData, options.signingKeys)
+export type { Valuesets, SigningKeys, RuleSet, DCCData, ValueSetsComputed }
 
-  if (error) {
-    throw error
-  }
-
-  return cert
+export {
+  decodeAndValidateRules,
+  decodeOnly,
+  buildValuesetsComputed,
+  loadDCCConfigData,
 }
-
-export type { Valuesets, SigningKeys, RuleSet, Options }
-
-export { decodeAndValidateRules, decodeOnly }

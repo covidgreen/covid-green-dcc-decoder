@@ -10,11 +10,11 @@ import {
   PAYLOAD_KEYS,
   CertificateContent,
   CERT_TYPE,
-} from '../../types/hcert'
+} from '../types/hcert'
 import { mapToJSON } from '../util'
-import { SigningKeys, SigningKey } from '../../types'
+import { SigningKeys, SigningKey, VerificationResult } from '../types'
+import * as errors from '../types/errors'
 
-import * as errors from './errors'
 import verifySignature from './verify-signature'
 
 function getCountry(
@@ -84,7 +84,7 @@ function decodeCbor(qrCbor): {
   country: string
   issuedAt: number
   expiresAt: number
-  cert: CertificateContent
+  rawCert: CertificateContent
   algo: ALGOS
   type: CERT_TYPE
 } {
@@ -100,14 +100,14 @@ function decodeCbor(qrCbor): {
   const kid = getKid(protectedHeader, unprotectedHeader)
   const algo = getAlgo(protectedHeader, unprotectedHeader)
 
-  const cert = mapToJSON(content.get(PAYLOAD_KEYS.CONTENT).get(1))
-  const type = getCertType(cert)
-  const country = getCountry(cert, type, content.get(PAYLOAD_KEYS.ISSUER))
+  const rawCert = mapToJSON(content.get(PAYLOAD_KEYS.CONTENT).get(1))
+  const type = getCertType(rawCert)
+  const country = getCountry(rawCert, type, content.get(PAYLOAD_KEYS.ISSUER))
 
   // move into a function as mapping/transformation grows
   if (type === CERT_TYPE.TEST) {
-    if (cert.t[0].sc instanceof Date) {
-      cert.t[0].sc = cert.t[0].sc.toISOString()
+    if (rawCert.t[0].sc instanceof Date) {
+      rawCert.t[0].sc = rawCert.t[0].sc.toISOString()
     }
   }
 
@@ -116,7 +116,7 @@ function decodeCbor(qrCbor): {
     country,
     issuedAt: content.get(PAYLOAD_KEYS.ISSUED_AT),
     expiresAt: content.get(PAYLOAD_KEYS.EXPIRES_AT),
-    cert,
+    rawCert,
     algo,
     type,
   }
@@ -139,16 +139,10 @@ function findKeysToValidateAgainst(
   return keys
 }
 
-type DecodeResult = {
-  cert?: CertificateContent
-  type?: CERT_TYPE
-  error?: Error
-}
-
 export default async function decodeQR(
   qr: string,
   signingKeys: SigningKeys
-): Promise<DecodeResult> {
+): Promise<VerificationResult> {
   if (!qr.startsWith('HC1:')) {
     return { error: errors.invalidQR() }
   }
@@ -159,11 +153,10 @@ export default async function decodeQR(
     const qrCbor = ensureCOSEStructure(Buffer.from(pako.inflate(qrZipped)))
 
     // We decode the whole cbor
-    const { kid, cert, country, expiresAt, algo, issuedAt, type } =
-      decodeCbor(qrCbor)
+    const { kid, rawCert, country, expiresAt, algo, type } = decodeCbor(qrCbor)
 
     const keysToUse = findKeysToValidateAgainst(country, kid, signingKeys)
-    console.log(
+    /* console.log(
       'Detected',
       JSON.stringify(
         {
@@ -178,21 +171,21 @@ export default async function decodeQR(
         null,
         2
       )
-    )
+    )*/
 
     if (new Date(expiresAt * 1000) < new Date()) {
-      return { cert, error: errors.certExpired(), type }
+      return { rawCert, error: errors.certExpired(), type }
     }
 
     if (keysToUse.length === 0) {
-      return { cert, error: errors.noMatchingSigKey(), type }
+      return { rawCert, error: errors.noMatchingSigKey(), type }
     }
 
     const result = await verifySignature(qrCbor, algo, keysToUse)
 
-    const error = result instanceof Error ? result : null
+    const error = result instanceof Error ? result : undefined
 
-    return { cert, type, error }
+    return { rawCert, type, error }
   } catch (err) {
     console.log('Error:', err)
     return { error: errors.invalidData() }

@@ -2,10 +2,9 @@ import cose from 'cose-js'
 import cbor from 'cbor'
 import NodeRSA from 'node-rsa'
 
-import { SigningKey } from '../../types'
-import { ALGOS, CBOR_STRUCTURE } from '../../types/hcert'
-
-import * as errors from './errors'
+import { SigningKey } from '../types'
+import { ALGOS, CBOR_STRUCTURE } from '../types/hcert'
+import * as errors from '../types/errors'
 
 async function verifyECDSA(
   message: Buffer,
@@ -21,7 +20,7 @@ async function verifyECDSA(
         },
       })
       if (verifiedBuf) {
-        console.log('key worked', key.kid, key.country)
+        // console.log('key worked', key.kid, key.country)
         return true
       }
     } catch (e) {
@@ -64,9 +63,9 @@ async function verifyRSA(
       rsa.setOptions(rsaOptions)
       const result = rsa.verify(toBeSigned, signature, 'buffer')
 
-      console.log('RESULT:', result)
+      // console.log('RESULT:', result)
       if (result) {
-        console.log('key worked', key.kid, key.country)
+        // console.log('key worked', key.kid, key.country)
         return true
       }
     } catch (e) {
