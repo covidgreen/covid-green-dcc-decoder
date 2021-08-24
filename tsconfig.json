@@ -2,14 +2,13 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "noUnusedLocals": true,
-    "target": "esnext",
+    "target": "es5",
     "module": "commonjs",
     "lib": [
       "esnext",
       "dom"
     ],
     "allowJs": true,
-    "noEmit": true,
     "isolatedModules": true,
     "strict": false,
     "moduleResolution": "node",
@@ -20,9 +19,8 @@
     "resolveJsonModule": true,
     "types": ["jest", "node"],
     "typeRoots": ["node_modules/@types"],
-    "paths": {
-      "@app/*": ["./*"],
-    }
+    "declaration": true,
+    "outDir": "dist/",
   },
   "include": ["src"]
 }

@@ -1,6 +1,6 @@
 {
   "name": "dcc-decoder",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "scripts": {
     "test": "env-cmd -f .env jest --coverage",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
@@ -53,7 +53,8 @@
       "pre-commit": "lint-staged"
     }
   },
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/covidgreen/covid-green-dcc-decoder.git"
@@ -62,6 +63,7 @@
     "DCC",
     "decoding"
   ],
+  "prepublish": "tsc",
   "author": "NearForm",
   "license": "Apache-2.0",
   "bugs": {
