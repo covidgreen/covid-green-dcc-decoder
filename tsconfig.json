@@ -2,7 +2,7 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "noUnusedLocals": true,
-    "target": "es5",
+    "target": "esnext",
     "module": "commonjs",
     "lib": [
       "esnext",
@@ -22,5 +22,5 @@
     "declaration": true,
     "outDir": "dist/",
   },
-  "include": ["src"]
+  "include": ["src/"]
 }

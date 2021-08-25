@@ -65,5 +65,20 @@ buck-out/
 
 android/app/google-services.json
 
-dist/
 coverage/
+
+test/
+.github/
+jest.config.js
+tsconfig.json
+lint-staged.config.js
+.env
+.env.sample
+.eslintignore
+.eslintrc.js
+.gitattributes
+.gitmodules
+.nvmrc
+.prettierrc
+babel.config.js
+.editorconfig
