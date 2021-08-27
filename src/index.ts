@@ -7,6 +7,9 @@ import {
   SigningKeys,
   Valuesets,
   InputSource,
+  VaccinationGroup,
+  TestGroup,
+  RecoveryGroup,
 } from './types'
 import { getDCCData, populateCertValues } from './util'
 import { extractQRFromImage, extractQRFromPDF } from './decode'
@@ -105,7 +108,16 @@ const decodeAndValidateRules = async (inputs: {
   return { ...result, ruleErrors }
 }
 
-export type { Valuesets, SigningKeys, RuleSet, DCCData, ValueSetsComputed }
+export type {
+  Valuesets,
+  SigningKeys,
+  RuleSet,
+  DCCData,
+  ValueSetsComputed,
+  VaccinationGroup,
+  TestGroup,
+  RecoveryGroup,
+}
 
 export {
   decodeAndValidateRules,

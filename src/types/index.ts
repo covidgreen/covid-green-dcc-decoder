@@ -1,6 +1,14 @@
 import { RuleSet, ValueSetsComputed } from '../rules-runner/types'
 
-import { CertificateContent, CERT_TYPE } from './hcert'
+import {
+  CertificateContent,
+  CERT_TYPE,
+  VaccinationGroup,
+  TestGroup,
+  RecoveryGroup,
+} from './hcert'
+
+export type { VaccinationGroup, TestGroup, RecoveryGroup }
 
 export type Valueset = {
   display: string
