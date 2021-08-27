@@ -117,6 +117,7 @@ export type {
   VaccinationGroup,
   TestGroup,
   RecoveryGroup,
+  VerificationResult,
 }
 
 export {

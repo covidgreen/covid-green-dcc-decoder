@@ -1,8 +1,8 @@
 {
   "name": "dcc-decoder",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "scripts": {
-    "test": "env-cmd -f .env jest --coverage",
+    "test": "jest --coverage",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --fix --ext .js,.ts",
     "typecheck": "tsc"
