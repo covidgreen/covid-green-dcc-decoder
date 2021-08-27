@@ -1,14 +1,18 @@
 import fs from 'fs'
 import path from 'path'
 
+import fetch from 'node-fetch'
+
 import {
   decodeOnly,
   decodeAndValidateRules,
   buildValuesetsComputed,
+  loadDCCConfigData,
 } from '../src/index'
-import { CERT_TYPE } from '../src/types/hcert'
 
 import * as dccConfig from './certdata.json'
+
+jest.mock('node-fetch', () => jest.fn())
 
 const VACCINE_CERT_1_OF_2 =
   'HC1:NCFOXN%TS3DH$QGO9C6%O +1P3HA.QRT8SFBXG42GLA:E:X9TLS9HLKQC%8LCV4*XUA2PSGH.+HIMIBRU SITK292W7*RBT1ON1XVHWVHE 9HOP+MMBT16Y51Y9AT1 %P6IAXPMMCGCNNM3LS.8YE9/MVEK0WLI+J53O8J.V J8$XJ3:UWS14Y7Z:UBRIFX9JS5SX1MU9WW5.OQO$HTM2A.P2WQ J2TM20R57 9%%PRWOZIEQKERQ8IY1I$HH%U8 9PS5OH6SRISLGFTIPPAAMI PQVW55Q1DHB R1:PI/E2$4J6ALD-I E70KV:SNO05J1TGE7Z+SP5LQ05KCTTZK$E7DIN /KF-KRZ4N*KV7J$%25I3KC31835AL5:4A93/IBIFT+EJEG34S8N%TPORNFV3HR1UMSZ4KI9ZSH9WRF4W5IM17T4Q1 :IP0J-2VJ8JEE5DZV7Y9OJ84NVA6SXVHU3O1:58MT8UGD:GEG0I5WAQSU/NY-Q-0KL4E'
@@ -52,9 +56,10 @@ describe('Validating QR Codes', () => {
 
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.VACCINE)
+      expect(result.type).toEqual('v')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
+      expect(result.debugData).toBeUndefined()
       expect(result.cert.nam.gnt).toEqual('JANE')
       expect(result.cert.v[0].tg).toEqual('COVID-19')
       expect(result.rawCert.v[0].tg).toEqual('840539006')
@@ -67,7 +72,7 @@ describe('Validating QR Codes', () => {
       })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.TEST)
+      expect(result.type).toEqual('t')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
 
@@ -83,13 +88,66 @@ describe('Validating QR Codes', () => {
       })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.RECOVERY)
+      expect(result.type).toEqual('r')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
 
       expect(result.cert.nam.gnt).toEqual('JANE')
       expect(result.cert.r[0].tg).toEqual('COVID-19')
       expect(result.rawCert.r[0].tg).toEqual('840539006')
+    })
+
+    it('Decode from a vaccine cert and return debug data', async () => {
+      const result = await decodeOnly(
+        {
+          source: { qrData: VACCINE_CERT_1_OF_2 },
+          dccData: dccDataSet,
+        },
+        true
+      )
+
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeUndefined()
+      expect(result.debugData).toBeDefined()
+      expect(result.cert.nam.gnt).toEqual('JANE')
+      expect(result.cert.v[0].tg).toEqual('COVID-19')
+      expect(result.rawCert.v[0].tg).toEqual('840539006')
+    })
+
+    it('Decode from a vaccine cert but provide no keys', async () => {
+      await expect(
+        decodeOnly({
+          source: { qrData: VACCINE_CERT_1_OF_2 },
+          dccData: { valueSets: dccDataSet.valueSets },
+        })
+      ).rejects.toThrowError()
+    })
+
+    it('Decode from a vaccine cert but provide no valuesets', async () => {
+      await expect(
+        decodeOnly({
+          source: { qrData: VACCINE_CERT_1_OF_2 },
+          dccData: { signingKeys: dccDataSet.signingKeys },
+        })
+      ).rejects.toThrowError()
+    })
+
+    it('Decode from a vaccine cert but no signing key', async () => {
+      const result = await decodeOnly(
+        {
+          source: { qrData: VACCINE_CERT_1_OF_2 },
+          dccData: { signingKeys: [], valueSets: dccDataSet.valueSets },
+        },
+        true
+      )
+
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.error).toBeDefined()
     })
   })
 
@@ -104,7 +162,7 @@ describe('Validating QR Codes', () => {
       })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.VACCINE)
+      expect(result.type).toEqual('v')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
     })
@@ -119,7 +177,7 @@ describe('Validating QR Codes', () => {
       })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.RECOVERY)
+      expect(result.type).toEqual('r')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
     })
@@ -154,7 +212,7 @@ describe('Validating QR Codes', () => {
       })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.VACCINE)
+      expect(result.type).toEqual('v')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
     })
@@ -168,7 +226,7 @@ describe('Validating QR Codes', () => {
       const result = await decodeOnly({ source: { pdf }, dccData: dccDataSet })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.VACCINE)
+      expect(result.type).toEqual('v')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
     })
@@ -191,7 +249,7 @@ describe('Validating QR Codes', () => {
       })
 
       expect(result.cert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.VACCINE)
+      expect(result.type).toEqual('v')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeDefined()
       expect(result.cert.nam.gnt).toEqual('JANE')
@@ -206,7 +264,7 @@ describe('Validating QR Codes', () => {
       })
 
       expect(result.cert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.TEST)
+      expect(result.type).toEqual('t')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeDefined()
       expect(result.cert.nam.gnt).toEqual('JANE')
@@ -221,11 +279,61 @@ describe('Validating QR Codes', () => {
       })
 
       expect(result.cert).toBeDefined()
-      expect(result.type).toEqual(CERT_TYPE.RECOVERY)
+      expect(result.type).toEqual('r')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeDefined()
       expect(result.cert.nam.gnt).toEqual('JANE')
       expect(result.ruleErrors.length).toEqual(0)
+    })
+
+    it('Decode with no rules', async () => {
+      const result = await decodeAndValidateRules({
+        source: { qrData: VACCINE_CERT_1_OF_2 },
+        ruleCountry: 'ZZ',
+        dccData: dccDataSet,
+      })
+
+      expect(result.cert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeDefined()
+      expect(result.cert.nam.gnt).toEqual('JANE')
+      expect(result.ruleErrors.length).toEqual(0)
+    })
+
+    it('Decode with a decode error', async () => {
+      const result = await decodeAndValidateRules({
+        source: { qrData: VACCINE_CERT_1_OF_2 },
+        ruleCountry: 'IE',
+        dccData: { signingKeys: [], valueSets: dccDataSet.valueSets },
+      })
+
+      expect(result.cert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.error).toBeDefined()
+      expect(result.ruleErrors).toBeUndefined()
+    })
+  })
+
+  describe('Load dcc data', () => {
+    it('Load dcc data with an invalid url', async () => {
+      await expect(loadDCCConfigData('some url')).rejects.toThrowError()
+    })
+
+    it('Load dcc data', async () => {
+      // eslint-disable-next-line
+      const response = Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => {
+          return dccConfig
+        },
+      })
+      fetch.mockImplementation(() => response)
+
+      const data = await loadDCCConfigData('some url')
+      expect(data.signingKeys).toBeDefined()
+      expect(data.ruleSet).toBeDefined()
     })
   })
 })

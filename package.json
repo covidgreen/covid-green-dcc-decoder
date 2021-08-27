@@ -1,6 +1,6 @@
 {
   "name": "dcc-decoder",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "scripts": {
     "test": "jest --coverage",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
@@ -32,7 +32,6 @@
     "babel-jest": "^27.0.6",
     "babel-plugin-transform-runtime": "^6.23.0",
     "cli-table": "^0.3.6",
-    "env-cmd": "^10.1.0",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-import": "^2.23.2",
@@ -61,7 +60,8 @@
   },
   "keywords": [
     "DCC",
-    "decoding"
+    "EU Covid Certs",
+    "Digital Covid Certs"
   ],
   "prepublish": "tsc",
   "author": "NearForm",

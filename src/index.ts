@@ -10,11 +10,11 @@ import {
   VaccinationGroup,
   TestGroup,
   RecoveryGroup,
+  RuleError,
 } from './types'
 import { getDCCData, populateCertValues } from './util'
 import { extractQRFromImage, extractQRFromPDF } from './decode'
-
-let loadedDataSet: DCCData
+import { CERT_TYPE } from './types/hcert'
 
 const findQRData = async (source: InputSource): Promise<string> => {
   let qrSource = source.qrData
@@ -27,11 +27,14 @@ const findQRData = async (source: InputSource): Promise<string> => {
   return qrSource
 }
 
-const decodeOnly = async (inputs: {
-  source: InputSource
-  dccData?: DCCData
-}): Promise<VerificationResult> => {
-  const dcc = inputs.dccData || loadedDataSet
+const decodeOnly = async (
+  inputs: {
+    source: InputSource
+    dccData: DCCData
+  },
+  debugInfo = false
+): Promise<VerificationResult> => {
+  const dcc = inputs.dccData
   if (!(dcc && dcc.signingKeys)) {
     throw new Error('You must provide keys')
   }
@@ -41,7 +44,7 @@ const decodeOnly = async (inputs: {
 
   const qrSource = await findQRData(inputs.source)
 
-  const result = await decodeQR(qrSource, dcc.signingKeys)
+  const result = await decodeQR(qrSource, dcc.signingKeys, debugInfo)
 
   if (result.rawCert) {
     result.cert = populateCertValues(result.rawCert, result.type, dcc.valueSets)
@@ -59,37 +62,39 @@ const buildValuesetsComputed = (valuesets): ValueSetsComputed => {
 }
 
 const loadDCCConfigData = async (url): Promise<DCCData> => {
-  loadedDataSet = await getDCCData(url)
-  return loadedDataSet
+  return await getDCCData(url)
 }
 
-const decodeAndValidateRules = async (inputs: {
-  source: InputSource
-  ruleCountry: string
-  ruleLang?: string | 'en'
-  dccData?: DCCData
-}): Promise<VerificationResult> => {
-  const result = await decodeOnly(inputs)
+const decodeAndValidateRules = async (
+  inputs: {
+    source: InputSource
+    ruleCountry: string
+    ruleLang?: string | 'en'
+    dccData: DCCData
+  },
+  debugInfo = false
+): Promise<VerificationResult> => {
+  const result = await decodeOnly(inputs, debugInfo)
 
   if (result.error) {
     return result
   }
 
-  const dcc = inputs.dccData || loadedDataSet
+  const dcc = inputs.dccData
 
-  const ruleErrors = []
+  const ruleErrors: RuleError[] = []
   const ruleset = dcc.ruleSet && dcc.ruleSet[inputs.ruleCountry]
 
   if (ruleset) {
     const results = runRuleSet(ruleset, {
       payload: result.rawCert,
       external: {
-        valueSets: dcc.valuesetsComputed || loadedDataSet.valuesetsComputed,
+        valueSets: dcc.valuesetsComputed,
         validationClock: new Date().toISOString(),
       },
     })
     // console.log('RESULTS:', results)
-
+    console.log(results)
     if (results && !results.allSatisfied) {
       Object.keys(results?.ruleEvaluations || {}).forEach(ruleId => {
         const ruleResult = results?.ruleEvaluations[ruleId]
@@ -118,6 +123,7 @@ export type {
   TestGroup,
   RecoveryGroup,
   VerificationResult,
+  CERT_TYPE,
 }
 
 export {

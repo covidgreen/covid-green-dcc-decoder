@@ -46,12 +46,18 @@ export type DCCData = {
   valuesetsComputed?: ValueSetsComputed
 }
 
+export type RuleError = {
+  id: string
+  description: string
+}
+
 export type VerificationResult = {
   rawCert?: CertificateContent
   cert?: CertificateContent
-  ruleErrors?: string[]
+  ruleErrors?: RuleError[]
   type?: CERT_TYPE
   error?: Error
+  debugData?: Record<string, unknown>
 }
 
 export type InputSource = {

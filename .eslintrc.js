@@ -40,6 +40,7 @@ module.exports = {
   },
   env: {
     'jest/globals': true,
+    jest: true,
     node: true,
   },
 }
