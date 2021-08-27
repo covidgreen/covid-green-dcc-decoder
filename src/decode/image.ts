@@ -1,4 +1,4 @@
-import { PNG } from 'pngjs-nozlib'
+import { PNG } from 'pngjs'
 import jsQR from 'jsqr'
 
 import { qrNotDetected } from '../types/errors'
