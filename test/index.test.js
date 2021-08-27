@@ -4,9 +4,10 @@ import path from 'path'
 import {
   decodeOnly,
   decodeAndValidateRules,
-  loadDCCConfigData,
+  buildValuesetsComputed,
 } from '../src/index'
 import { CERT_TYPE } from '../src/types/hcert'
+import * as dccConfig from './certdata.json'
 
 const VACCINE_CERT_1_OF_2 =
   'HC1:NCFOXN%TS3DH$QGO9C6%O +1P3HA.QRT8SFBXG42GLA:E:X9TLS9HLKQC%8LCV4*XUA2PSGH.+HIMIBRU SITK292W7*RBT1ON1XVHWVHE 9HOP+MMBT16Y51Y9AT1 %P6IAXPMMCGCNNM3LS.8YE9/MVEK0WLI+J53O8J.V J8$XJ3:UWS14Y7Z:UBRIFX9JS5SX1MU9WW5.OQO$HTM2A.P2WQ J2TM20R57 9%%PRWOZIEQKERQ8IY1I$HH%U8 9PS5OH6SRISLGFTIPPAAMI PQVW55Q1DHB R1:PI/E2$4J6ALD-I E70KV:SNO05J1TGE7Z+SP5LQ05KCTTZK$E7DIN /KF-KRZ4N*KV7J$%25I3KC31835AL5:4A93/IBIFT+EJEG34S8N%TPORNFV3HR1UMSZ4KI9ZSH9WRF4W5IM17T4Q1 :IP0J-2VJ8JEE5DZV7Y9OJ84NVA6SXVHU3O1:58MT8UGD:GEG0I5WAQSU/NY-Q-0KL4E'
@@ -21,21 +22,34 @@ describe('Validating QR Codes', () => {
   let dccDataSet
 
   beforeAll(async () => {
-    dccDataSet = await loadDCCConfigData(process.env.DCC_DATA_URL)
+    dccDataSet = {signingKeys: dccConfig.certs, ruleSet: dccConfig.rules, 
+      valueSets: {
+        countryCodes: dccConfig.valueSets.countryCodes.valueSetValues,
+        diseaseAgentTargeted:
+        dccConfig.valueSets.diseaseAgentTargeted.valueSetValues,
+        testManf: dccConfig.valueSets.testManf.valueSetValues,
+        testResult: dccConfig.valueSets.testResult.valueSetValues,
+        testType: dccConfig.valueSets.testType.valueSetValues,
+        vaccineMahManf: dccConfig.valueSets.vaccineMahManf.valueSetValues,
+        vaccineMedicinalProduct:
+        dccConfig.valueSets.vaccineMedicinalProduct.valueSetValues,
+        vaccineProphylaxis: dccConfig.valueSets.vaccineProphylaxis.valueSetValues,
+      },
+      valuesetsComputed: buildValuesetsComputed(dccConfig.valueSets)}
   })
 
   describe('Decode from qr data', () => {
     it('Decode from a vaccine cert ', async () => {
       const result = await decodeOnly({
         source: { qrData: VACCINE_CERT_1_OF_2 },
-        dccData: dccDataSet,
+        dccData: dccDataSet
       })
+
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
       expect(result.type).toEqual(CERT_TYPE.VACCINE)
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
-
       expect(result.cert.nam.gnt).toEqual('JANE')
       expect(result.cert.v[0].tg).toEqual('COVID-19')
       expect(result.rawCert.v[0].tg).toEqual('840539006')
@@ -44,7 +58,7 @@ describe('Validating QR Codes', () => {
     it('Decode from a test nat cert', async () => {
       const result = await decodeOnly({
         source: { qrData: TEST_NAT_CERT },
-        dccData: dccDataSet,
+        dccData: dccDataSet
       })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
@@ -60,7 +74,7 @@ describe('Validating QR Codes', () => {
     it('Decode from a recovery cert', async () => {
       const result = await decodeOnly({
         source: { qrData: RECOVERY_CERT },
-        dccData: dccDataSet,
+        dccData: dccDataSet
       })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
@@ -94,7 +108,7 @@ describe('Validating QR Codes', () => {
       const image = fs.readFileSync(
         path.join(__dirname, 'images', 'recoverycert.png')
       )
-      const result = await decodeOnly({ source: { image } })
+      const result = await decodeOnly({ source: { image }, dccData: dccDataSet})
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
       expect(result.type).toEqual(CERT_TYPE.RECOVERY)
@@ -107,7 +121,7 @@ describe('Validating QR Codes', () => {
         path.join(__dirname, 'images', 'multiqr.png')
       )
 
-      await expect(decodeOnly({ source: { image } })).rejects.toThrowError()
+      await expect(decodeOnly({ source: { image }, dccData: dccDataSet })).rejects.toThrowError()
     })
 
     it('Decode a cert from an image but provide an invalid image as input', async () => {
@@ -115,14 +129,14 @@ describe('Validating QR Codes', () => {
         path.join(__dirname, 'images', 'notanimage.pdf')
       )
 
-      await expect(decodeOnly({ source: { image } })).rejects.toThrowError()
+      await expect(decodeOnly({ source: { image }, dccData: dccDataSet })).rejects.toThrowError()
     })
 
     it('Decode an RSA signed vaccine cert', async () => {
       const image = fs.readFileSync(
         path.join(__dirname, 'images', 'rsasignedvaccinecert.png')
       )
-      const result = await decodeOnly({ source: { image } })
+      const result = await decodeOnly({ source: { image }, dccData: dccDataSet })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
       expect(result.type).toEqual(CERT_TYPE.VACCINE)
@@ -136,7 +150,7 @@ describe('Validating QR Codes', () => {
       const pdf = fs.readFileSync(
         path.join(__dirname, 'pdfs', 'vaccinecert.pdf')
       )
-      const result = await decodeOnly({ source: { pdf } })
+      const result = await decodeOnly({ source: { pdf }, dccData: dccDataSet })
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
       expect(result.type).toEqual(CERT_TYPE.VACCINE)
@@ -147,7 +161,7 @@ describe('Validating QR Codes', () => {
     it('Decode a vaccine cert from a pdf butr source is not a pdf', async () => {
       const pdf = fs.readFileSync(path.join(__dirname, 'pdfs', 'notapdf.png'))
 
-      await expect(decodeOnly({ source: { pdf } })).rejects.toThrowError()
+      await expect(decodeOnly({ source: { pdf }, dccData: dccDataSet })).rejects.toThrowError()
     })
   })
 

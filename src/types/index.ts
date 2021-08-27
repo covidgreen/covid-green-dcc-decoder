@@ -49,5 +49,5 @@ export type VerificationResult = {
 export type InputSource = {
   qrData?: string
   image?: Buffer
-  pdf: Buffer
+  pdf?: Buffer
 }
