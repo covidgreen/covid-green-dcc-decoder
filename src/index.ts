@@ -94,7 +94,6 @@ const decodeAndValidateRules = async (
       },
     })
     // console.log('RESULTS:', results)
-    console.log(results)
     if (results && !results.allSatisfied) {
       Object.keys(results?.ruleEvaluations || {}).forEach(ruleId => {
         const ruleResult = results?.ruleEvaluations[ruleId]
