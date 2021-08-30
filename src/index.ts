@@ -14,7 +14,7 @@ import {
 } from './types'
 import { getDCCData, populateCertValues } from './util'
 import { extractQRFromImage, extractQRFromPDF } from './decode'
-import { CERT_TYPE } from './types/hcert'
+import { CERT_TYPE, CertificateContent } from './types/hcert'
 
 const findQRData = async (source: InputSource): Promise<string> => {
   let qrSource = source.qrData
@@ -123,6 +123,7 @@ export type {
   RecoveryGroup,
   VerificationResult,
   CERT_TYPE,
+  CertificateContent,
 }
 
 export {

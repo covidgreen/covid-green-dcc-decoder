@@ -1,6 +1,6 @@
 {
   "name": "dcc-decoder",
-  "version": "0.2.10",
+  "version": "0.3.0",
   "scripts": {
     "test": "jest --coverage",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
