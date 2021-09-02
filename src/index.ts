@@ -27,13 +27,10 @@ const findQRData = async (source: InputSource): Promise<string> => {
   return qrSource
 }
 
-const decodeOnly = async (
-  inputs: {
-    source: InputSource
-    dccData: DCCData
-  },
-  debugInfo = false
-): Promise<VerificationResult> => {
+const decodeOnly = async (inputs: {
+  source: InputSource
+  dccData: DCCData
+}): Promise<VerificationResult> => {
   const dcc = inputs.dccData
   if (!(dcc && dcc.signingKeys)) {
     throw new Error('You must provide keys')
@@ -44,7 +41,7 @@ const decodeOnly = async (
 
   const qrSource = await findQRData(inputs.source)
 
-  const result = await decodeQR(qrSource, dcc.signingKeys, debugInfo)
+  const result = await decodeQR(qrSource, dcc.signingKeys)
 
   if (result.rawCert) {
     result.cert = populateCertValues(result.rawCert, result.type, dcc.valueSets)
@@ -65,16 +62,14 @@ const loadDCCConfigData = async (url): Promise<DCCData> => {
   return await getDCCData(url)
 }
 
-const decodeAndValidateRules = async (
-  inputs: {
-    source: InputSource
-    ruleCountry: string
-    ruleLang?: string | 'en'
-    dccData: DCCData
-  },
-  debugInfo = false
-): Promise<VerificationResult> => {
-  const result = await decodeOnly(inputs, debugInfo)
+const decodeAndValidateRules = async (inputs: {
+  source: InputSource
+  ruleCountry: string
+  ruleLang?: string | 'en'
+  dccData: DCCData
+  validationClock?: string
+}): Promise<VerificationResult> => {
+  const result = await decodeOnly(inputs)
 
   if (result.error) {
     return result
@@ -90,7 +85,9 @@ const decodeAndValidateRules = async (
       payload: result.rawCert,
       external: {
         valueSets: dcc.valuesetsComputed,
-        validationClock: new Date().toISOString(),
+        validationClock: inputs.validationClock
+          ? inputs.validationClock
+          : new Date().toISOString(),
       },
     })
     // console.log('RESULTS:', results)

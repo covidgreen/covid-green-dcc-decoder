@@ -57,7 +57,7 @@ export type VerificationResult = {
   ruleErrors?: RuleError[]
   type?: CERT_TYPE
   error?: Error
-  debugData?: Record<string, unknown>
+  wrapperData?: Record<string, unknown>
 }
 
 export type InputSource = {

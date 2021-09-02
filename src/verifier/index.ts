@@ -141,8 +141,7 @@ function findKeysToValidateAgainst(
 
 export default async function decodeQR(
   qr: string,
-  signingKeys: SigningKeys,
-  debugInfo: boolean
+  signingKeys: SigningKeys
 ): Promise<VerificationResult> {
   if (!qr.startsWith('HC1:')) {
     return { error: errors.invalidQR() }
@@ -152,38 +151,35 @@ export default async function decodeQR(
     const qrBase45 = qr.replace('HC1:', '')
     const qrZipped = base45.decode(qrBase45)
     const qrCbor = ensureCOSEStructure(Buffer.from(pako.inflate(qrZipped)))
-    let debugData: Record<string, unknown>
     // We decode the whole cbor
     const { kid, rawCert, country, expiresAt, algo, type, issuedAt } =
       decodeCbor(qrCbor)
 
     const keysToUse = findKeysToValidateAgainst(country, kid, signingKeys)
 
-    if (debugInfo) {
-      debugData = {
-        country,
-        kid,
-        algo,
-        expiresAt: new Date(expiresAt * 1000),
-        issuedAt: new Date(issuedAt * 1000),
-        keysLength: keysToUse.length,
-        type,
-      }
+    const wrapperData: Record<string, unknown> = {
+      country,
+      kid,
+      algo,
+      expiresAt: new Date(expiresAt * 1000),
+      issuedAt: new Date(issuedAt * 1000),
+      keysLength: keysToUse.length,
+      type,
     }
 
     if (new Date(expiresAt * 1000) < new Date()) {
-      return { rawCert, error: errors.certExpired(), type, debugData }
+      return { rawCert, error: errors.certExpired(), type, wrapperData }
     }
 
     if (keysToUse.length === 0) {
-      return { rawCert, error: errors.noMatchingSigKey(), type, debugData }
+      return { rawCert, error: errors.noMatchingSigKey(), type, wrapperData }
     }
 
     const result = await verifySignature(qrCbor, algo, keysToUse)
 
     const error = result instanceof Error ? result : undefined
 
-    return { rawCert, type, error, debugData }
+    return { rawCert, type, error, wrapperData }
   } catch (err) {
     console.log('Error:', err)
     return { error: errors.invalidData() }

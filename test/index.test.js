@@ -15,13 +15,13 @@ import * as dccConfig from './certdata.json'
 jest.mock('node-fetch', () => jest.fn())
 
 const VACCINE_CERT_1_OF_2 =
-  'HC1:NCFOXN%TS3DH$QGO9C6%O +1P3HA.QRT8SFBXG42GLA:E:X9TLS9HLKQC%8LCV4*XUA2PSGH.+HIMIBRU SITK292W7*RBT1ON1XVHWVHE 9HOP+MMBT16Y51Y9AT1 %P6IAXPMMCGCNNM3LS.8YE9/MVEK0WLI+J53O8J.V J8$XJ3:UWS14Y7Z:UBRIFX9JS5SX1MU9WW5.OQO$HTM2A.P2WQ J2TM20R57 9%%PRWOZIEQKERQ8IY1I$HH%U8 9PS5OH6SRISLGFTIPPAAMI PQVW55Q1DHB R1:PI/E2$4J6ALD-I E70KV:SNO05J1TGE7Z+SP5LQ05KCTTZK$E7DIN /KF-KRZ4N*KV7J$%25I3KC31835AL5:4A93/IBIFT+EJEG34S8N%TPORNFV3HR1UMSZ4KI9ZSH9WRF4W5IM17T4Q1 :IP0J-2VJ8JEE5DZV7Y9OJ84NVA6SXVHU3O1:58MT8UGD:GEG0I5WAQSU/NY-Q-0KL4E'
+  'HC1:6BFOXN%TSMAHN-HXZSMMVQLG34MT9Q$AH$/80RBZEJ0PTM*469DLLOLX82AS$ZR NI4EFSYS1-ST*QGTAAY7.Y7B-S-*O5W41FDWKL%KN2V4LF9CEFE.DFHL KP8EFWKLI4OI84TNP8EFVA5TD87-5ZD5CC9T0H67T5QNG.85$0SGH.+H$NI4L6KXI%UG/YL WO*Z7ON1N+L-$BQO3BT1UEK7+P5IQ-HQ%YQE657Q4UYQD*O%+Q.SQBDOBKLP64-HQ/HQ+DR-DP-3AQ$95:UENEUW6646C46846OR6UF5LDCPK9//0*F7Z6NC8P$WA3AA9EPBDSM+QFE4UX4U96L*K1UPJCLHCRTWA%DPAC5ADNA2PI+MUKM1Q4IZ6QR8508XIORW6%5LKP89TMHW6 96 Y4-GC.WN.+5UET+3SQY27+I1JTG+TWARG6U$1W4.KM+F50Q97WOV2*-HT263TANVVU4CPY87PKQRAPQ0LFV+W7TPLJO2Y3RIV6TMQBUDN00B7V31'
 const TEST_NAT_CERT =
-  'HC1:NCFOXN%TS3DH$PC1JP58UN3VIR3CIDAG4%%5OGIV%Q/O7M*4$AEWS6AD64ZQ NI4EFSYSC%OW4PUE9.IP6MIVZ0K1HI 0VON/%8CY0H-AIZKA6C3S4SH99H6-F0+V9.T9D 9BTUXP6.O35V2QJA-O9AJ9SRISLGNTICZU6/GZW4Z*AK.GNNVR*G0C7 QTX63*SFTTTBM3+BBXSJ+LJX8LEG3SP4/IBMD3:YKPG3/EB76B0FBQHBQNB*3H3ZCHSG845RBQ746B46O1N646RM9XC5.Q69L6-96QW6U46Q3QR$P2OIC0JVPI5.S.EU6*3DZI69JAZI28KA/B:ZJ83BZUS/JTHOJ92K0TS3DJ6NJF0JEYI1DLZZLUCI5OI9YI:8D%BCS7VAD99P8R1FTMPFGWS MFCRUMN/75AXOWRM3HQ:CLV:SS1LSPMVJ3T*N7AUYPMM/JN5TYTOK FV8JZUOM*IN6DP JA4QJPTKMJQIK$1P39OR40GC8:2'
+  'HC1:6BFOXN%TSMAHN-HXZSMMVQLG34MT9Q$AH$/8VWBZEJ0PTM*469DJRVSRH+/DOJACV4*XUA2P9FH4%HFTIARI.R4HQ1*P1MX12XE-WHON1Y$LL99KCOK59.+IIYC6Q0ZIJPKJ+LJ%2TZ0DPA7AH5LXK$4JK%IR:4-Q00$499TVU1PK9PYLPN1VUU8C1VTEC$QZ76XCV/.QM:6LTM6-6KR6K+9SW6.B9-$M:Q6S89JR6-TM0IMEOM%+M72NI 16PPXY02EA81K0ECM8CXVDC8C90JZJAPEDI.C$JC7KDF9C$ZJ*DJ3Q4+Y5GT4+MPODSCX7B95.16595Y:7K-NSA7G6MA0PQNQJW63X7U-O 96SZ6FT5D75W9AAABE34+V4YC5/HQVNOA%TKQIB:0H$T7DS-47CXMHNM.+R/*D.QV2S7995/7RVJD 1L5F5J*IFBUD 6H RF.SXKI30HMGCZ J/SL.-20CSY$U4DGSM38TGLTN$PL-313H0VF0XGF'
 const TEST_RAT_CERT =
-  'HC1:NCFOXN%TS3DH$PC1JP58UN3VIR3CIDTH4O:5OGIV%Q/O7M*4$AEI*QAD64ZQ NI4EFSYSC%OW4PUE9.IP6MIVZ0K1HI 0VON/%8CY0H-AIZKA6C3S4/IEKMAB+HH+HSH9HPMME0$R1/T1QX5I+HAJ9SRISLGNTICZU2*8ZW4Z*AK.GNNVR*G0C7 QTX63*SF3RT*/403L+*4TLJ.FJXEBHP4WD34V4YD3F1LKD3KJ3X2LR*41MJ$3H3ZCHSG845RBQ746B46O1N646RM9XC5.Q69L6-96QW6U46Q3QR$P2OIC0JVPI5.S.EU6*3DZI69JAZI28KA/B:ZJ83BZUS/JTHOJ92K0TS3DJ6NJF0JEYI1DLZZLUCI5OI3WINXEBX0:K6172ODU481B5BQB1KPIMK4D25 US$.ONUA-.9V/VYXR+4B: 4:YMQMBQ/TLYSL9ULBQN.0KQMB*4MTUFYF:5VASH:MK1TI2+SPXS325S8IHB0UOS4/E'
+  'HC1:6BFOXN%TSMAHN-HXZSMMVQLG34MT9Q$AH$/83:BZEJ0PTM*469DR4TSRH+/DOMECV4*XUA2P9FH4%HFTIARI.R4HQ1*P1MX12XE-WHON1Y$LL99KCOK59.+IJYCDN0TA3RK37MBZD3%2TG+CBC7%55LXK$4JK%IR:4-Q00$499T*%HPK9PYLPN1VUU8C1VTEC$QZ76XCV/.QM:6LTM6-6KR6K+9SW6.B9-$M:Q6S89JR6-TM0IMEOM%+M72NI 16PPXY02EA81K0ECM8CXVDC8C90JZJAPEDI.C$JC7KDF9C$ZJ*DJ3Q4+Y5GT4+MPODSCX7B95.16595Y:7K-NSA7G6MA0PQNQJW63X7U-O 96SZ6FT5D75W9AAABE34+V4M85*GTML1V4H2E4YF25*OHJDO08.14/QC5HNIWQ$IM%39-1G*NJ52WX0O0D8V021UJ6CS5RVFS41SDE.1X$BKZ48:CY-6207O.PRECGEV/UI+TSMW3IOJF504VMM3'
 const RECOVERY_CERT =
-  'HC1:NCFOXN%TS3DH.YS2P4DXOUZ97J3A.QXV8VWBXG42GLA:E:X9TLSSDDKQC%8LCV4*XUA2P-FHT-H4SI/J9WVHWVH+ZE-R54W1$NICZUBOM*LPKW2GHKW/F3IKJ5QGRV*2HW2KVVVH85 LPJ2HI 0//CD4T9%2+-C90LX:C.*46*8GHHF/8G0HT*2E70ZJJ6JP$LO5B9-NT0 2$$0X4PCY0+-C*DD 9A /P3W14SITTQ$R7FVI*%NH$R KP8EF3EDG/7B9UQJO1FD3ED E7VPT80P9NTIV4-.BU0GLF9CEF .B5HFWKP/HLIJLKNF8JFHJP7NVDEB$/I*Z2BN65S9AR35/UBK6QTSR21/.7F13C5C98U*:4.OVCCD2$I6961W6PM09FPK.E$6GJXD8%9HZUVO8 U5L2ULUOYXMS$U5K2U9KH-FCS2UM61RHTY1OK5AFD'
+  'HC1:6BF%RN%TSMAHN-HVUOEJPJ-QNT3BNN1C2.7JC89XW3M TM*4335JXEAD64ZQ NI4EFSYS1-ST*QGTAAY7.Y7B-S-*O5W41FDNILAOV KLLF9$HFCD4-LN1FDBY4I0CU0GJMO9NT/Y4HD4G5OZD5CC9T0HE1JCNNQ7TT0H-FHT-HNTIUZUIS7HRIWQH.UCXGAMF2NI9QRAJG9IVU5P2-GA*PE+E6JT72JA H2XJAWLI+J53O8J.V J8$XJK*L5R1IS7K*LBT19+JIU1$GO P3JKB523KD3423 73DIB8J3OHBPHB%*4WV2Z73423ZQTZABKD3O05C$KFGF35T-B5P54YII*50 X4CZKHKB-43.E3KD3BBJC57.JLY8UF28JAAJGUEO5Z J3BHPCTYY3G:7H.VQ%V9UV/:8U1LZ8KZ2VT6ELPCPZ7.4Q05TOV0AQ5BQGR6E-*3CM7ZDDF4NC.SQVPHZ8000U507EWFDA13'
 
 describe('Validating QR Codes', () => {
   let dccDataSet
@@ -59,8 +59,7 @@ describe('Validating QR Codes', () => {
       expect(result.type).toEqual('v')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
-      expect(result.debugData).toBeUndefined()
-      expect(result.cert.nam.gnt).toEqual('JANE')
+      expect(result.cert.nam.gnt).toEqual('FRED')
       expect(result.cert.v[0].tg).toEqual('COVID-19')
       expect(result.rawCert.v[0].tg).toEqual('840539006')
     })
@@ -70,6 +69,7 @@ describe('Validating QR Codes', () => {
         source: { qrData: TEST_NAT_CERT },
         dccData: dccDataSet,
       })
+
       expect(result.cert).toBeDefined()
       expect(result.rawCert).toBeDefined()
       expect(result.type).toEqual('t')
@@ -92,29 +92,9 @@ describe('Validating QR Codes', () => {
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
 
-      expect(result.cert.nam.gnt).toEqual('JANE')
+      expect(result.cert.nam.gnt).toEqual('TOM')
       expect(result.cert.r[0].tg).toEqual('COVID-19')
       expect(result.rawCert.r[0].tg).toEqual('840539006')
-    })
-
-    it('Decode from a vaccine cert and return debug data', async () => {
-      const result = await decodeOnly(
-        {
-          source: { qrData: VACCINE_CERT_1_OF_2 },
-          dccData: dccDataSet,
-        },
-        true
-      )
-
-      expect(result.cert).toBeDefined()
-      expect(result.rawCert).toBeDefined()
-      expect(result.type).toEqual('v')
-      expect(result.error).toBeUndefined()
-      expect(result.ruleErrors).toBeUndefined()
-      expect(result.debugData).toBeDefined()
-      expect(result.cert.nam.gnt).toEqual('JANE')
-      expect(result.cert.v[0].tg).toEqual('COVID-19')
-      expect(result.rawCert.v[0].tg).toEqual('840539006')
     })
 
     it('Decode from a vaccine cert but provide no keys', async () => {
@@ -181,6 +161,21 @@ describe('Validating QR Codes', () => {
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
     })
+
+    /*it('Decode a recovery cert from an image (CH)', async () => {
+      const image = fs.readFileSync(
+        path.join(__dirname, 'images', 'REC_CH_BAG.png')
+      )
+      const result = await decodeOnly({
+        source: { image },
+        dccData: dccDataSet,
+      })
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('r')
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeUndefined()
+    })*/
 
     it('Decode a cert from an image that has multiple QR codes', async () => {
       const image = fs.readFileSync(
@@ -252,7 +247,7 @@ describe('Validating QR Codes', () => {
       expect(result.type).toEqual('v')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeDefined()
-      expect(result.cert.nam.gnt).toEqual('JANE')
+      expect(result.cert.nam.gnt).toEqual('FRED')
       expect(result.ruleErrors.length).toEqual(1)
     })
 
@@ -282,7 +277,7 @@ describe('Validating QR Codes', () => {
       expect(result.type).toEqual('r')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeDefined()
-      expect(result.cert.nam.gnt).toEqual('JANE')
+      expect(result.cert.nam.gnt).toEqual('TOM')
       expect(result.ruleErrors.length).toEqual(0)
     })
 
@@ -297,7 +292,7 @@ describe('Validating QR Codes', () => {
       expect(result.type).toEqual('v')
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeDefined()
-      expect(result.cert.nam.gnt).toEqual('JANE')
+      expect(result.cert.nam.gnt).toEqual('FRED')
       expect(result.ruleErrors.length).toEqual(0)
     })
 

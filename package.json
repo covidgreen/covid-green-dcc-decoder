@@ -1,6 +1,6 @@
 {
   "name": "dcc-decoder",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "scripts": {
     "test": "jest --coverage",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
@@ -11,7 +11,7 @@
     "base45": "^3.0.0",
     "canvas": "^2.8.0",
     "cbor": "^3.0.3",
-    "certlogic-js": "^0.7.7",
+    "certlogic-js": "^0.9.2",
     "cose-js": "^0.6.0",
     "jsqr": "^1.4.0",
     "node-fetch": "^2.6.1",

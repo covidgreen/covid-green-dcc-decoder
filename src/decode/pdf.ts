@@ -1,5 +1,6 @@
 // eslint-disable-next-line
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf'
+// import workerEntry from 'pdfjs-dist/legacy/build/pdf.worker.entry'
 import Canvas from 'canvas'
 
 import { qrNotDetected } from '../types/errors'
@@ -14,6 +15,8 @@ type CanvasAndContext = {
   canvas: Canvas.Canvas
   context: Canvas.NodeCanvasRenderingContext2D
 }
+
+// pdfjsLib.GlobalWorkerOptions.workerSrc = workerEntry
 
 // eslint-disable-next-line
 function NodeCanvasFactory() {}
