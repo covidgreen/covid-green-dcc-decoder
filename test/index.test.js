@@ -147,6 +147,19 @@ describe('Validating QR Codes', () => {
       expect(result.ruleErrors).toBeUndefined()
     })
 
+    it('Decode a vaccine cert from an jpeg image', async () => {
+      const image = fs.readFileSync(path.join(__dirname, 'images', 'test4.jpg'))
+      const result = await decodeOnly({
+        source: { image },
+        dccData: dccDataSet,
+      })
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeUndefined()
+    })
+
     it('Decode a recovery cert from an image', async () => {
       const image = fs.readFileSync(
         path.join(__dirname, 'images', 'recoverycert.png')
@@ -162,7 +175,7 @@ describe('Validating QR Codes', () => {
       expect(result.ruleErrors).toBeUndefined()
     })
 
-    /*it('Decode a recovery cert from an image (CH)', async () => {
+    /*it.only('Decode a recovery cert from an image (CH)', async () => {
       const image = fs.readFileSync(
         path.join(__dirname, 'images', 'REC_CH_BAG.png')
       )
@@ -182,9 +195,15 @@ describe('Validating QR Codes', () => {
         path.join(__dirname, 'images', 'multiqr.png')
       )
 
-      await expect(
-        decodeOnly({ source: { image }, dccData: dccDataSet })
-      ).rejects.toThrowError()
+      const result = await decodeOnly({
+        source: { image },
+        dccData: dccDataSet,
+      })
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeUndefined()
     })
 
     it('Decode a cert from an image but provide an invalid image as input', async () => {
@@ -232,6 +251,21 @@ describe('Validating QR Codes', () => {
       await expect(
         decodeOnly({ source: { pdf }, dccData: dccDataSet })
       ).rejects.toThrowError()
+    })
+
+    it.skip('Decode a vaccine cert from a pdf that has 2 qr codes', async () => {
+      const pdf = fs.readFileSync(
+        path.join(__dirname, 'pdfs', 'NIVaccinationcert.pdf')
+      )
+
+      const result = await decodeOnly({ source: { pdf }, dccData: dccDataSet })
+
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.rawCert.v[0].dn).toEqual(2)
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeUndefined()
     })
   })
 

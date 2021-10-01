@@ -54,7 +54,7 @@ NodeCanvasFactory.prototype = {
   },
 }
 
-export async function extractQRFromPDF(pdf: Buffer): Promise<string> {
+export async function extractQRFromPDF(pdf: Buffer): Promise<string[]> {
   // covert p[df to image
   // eslint-disable-next-line
   const pdfDoc = await pdfjsLib.getDocument({
@@ -64,7 +64,7 @@ export async function extractQRFromPDF(pdf: Buffer): Promise<string> {
   }).promise
 
   // we will read max 3 pages from a pdf
-  const pageMax = Math.min(pdfDoc.numPages, 3)
+  const pageMax = Math.min(pdfDoc.numPages, 1)
   let pageCount = 1
   let qrData
 
@@ -72,7 +72,7 @@ export async function extractQRFromPDF(pdf: Buffer): Promise<string> {
     const page = await pdfDoc.getPage(pageCount)
 
     // Render the page on a Node canvas with 100% scale.
-    const viewport = page.getViewport({ scale: 1.0 })
+    const viewport = page.getViewport({ scale: 1.3 })
     const canvasFactory = new NodeCanvasFactory()
     const canvasAndContext = canvasFactory.create(
       viewport.width,
@@ -92,10 +92,11 @@ export async function extractQRFromPDF(pdf: Buffer): Promise<string> {
       qrData = await extractQRFromImage(image)
     } catch (e) {
       // no image in page
+      console.log(e, 'Decode Image Exception')
     }
     pageCount += 1
   }
-  if (!qrData) {
+  if (!qrData || qrData.length === 0) {
     throw qrNotDetected()
   }
 
