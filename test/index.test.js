@@ -267,6 +267,19 @@ describe('Validating QR Codes', () => {
       expect(result.error).toBeUndefined()
       expect(result.ruleErrors).toBeUndefined()
     })
+
+    it.skip('Decode a vaccine cert from a pdf that has 2 qr codes, second version', async () => {
+      const pdf = fs.readFileSync(path.join(__dirname, 'pdfs', 'NiTest2.pdf'))
+
+      const result = await decodeOnly({ source: { pdf }, dccData: dccDataSet })
+
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.rawCert.v[0].dn).toEqual(2)
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeUndefined()
+    })
   })
 
   describe('Decode and validate rules', () => {
