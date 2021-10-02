@@ -72,7 +72,7 @@ export async function extractQRFromPDF(pdf: Buffer): Promise<string[]> {
     const page = await pdfDoc.getPage(pageCount)
 
     // Render the page on a Node canvas with 100% scale.
-    const viewport = page.getViewport({ scale: 1.3 })
+    const viewport = page.getViewport({ scale: 1.4 })
     const canvasFactory = new NodeCanvasFactory()
     const canvasAndContext = canvasFactory.create(
       viewport.width,
