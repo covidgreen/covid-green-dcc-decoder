@@ -13,14 +13,17 @@ import {
   RuleError,
 } from './types'
 import { getDCCData, populateCertValues } from './util'
-import { extractQRFromImage, extractQRFromPDF } from './decode'
 import { CERT_TYPE, CertificateContent } from './types/hcert'
 
 const findQRData = async (source: InputSource): Promise<string[]> => {
   let qrSources = [source.qrData]
   if (source.image) {
+    /* eslint-disable */
+    const { extractQRFromImage } = require('./decode')
     qrSources = await extractQRFromImage(source.image)
   } else if (source.pdf) {
+    /* eslint-disable */
+    const { extractQRFromPDF } = require('./decode')
     qrSources = await extractQRFromPDF(source.pdf)
   }
 
