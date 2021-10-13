@@ -27,7 +27,7 @@ npm install --save dcc-decoder
 
 ## Usage
 
-This module supports decoding DCC data either from the QR data, extracting from an image(png only) or extracting from a PDF.
+This module supports decoding DCC data from the QR data.
 The module can directly load and utilise the trust list from a url provided or you can pass in the trust list, valuesets and business rules.
 
 The response will contain the raw cert (rawCert), the populated cert (cert) using the valudset provided, an errors array that will contain any errors encountered during decoding such as invalid signatire, cert expired etc
@@ -38,9 +38,10 @@ The response will contain the raw cert (rawCert), the populated cert (cert) usin
 import { decodeOnly, loadDCCConfigData } from 'dcc-decoder';
 
 (async () => {
-  await loadDCCConfigData('https://url_for_config')
+  const dcc = await loadDCCConfigData('https://url_for_config')
   const result = await decodeOnly({
-          source: { qrData: 'HC1:....' }
+          source: 'HC1:....',
+          dccData: dcc
         })
   if (result.errors) {
     console.log('Decoding error', result.errors)
@@ -54,30 +55,30 @@ import { decodeOnly, loadDCCConfigData } from 'dcc-decoder';
 ##### `loadDCCConfigData()`
 
 ```javascript
-const canSupport = await loadDCCConfigData('https://url_for_config')
+const dccData = await loadDCCConfigData('https://url_for_config')
 ```
 
-Used to load the dcc config data needed to decode and validate a DCC. Returns the config but also caches it internally in the module.
+Used to load the dcc config data needed to decode and validate a DCC. Returns the config.
 
 ---
 
 ##### `decodeOnly()`
 
 ```javascript
-const result = await decodeOnly({source: {qrData: 'HC1:....'}});
+const result = await decodeOnly({source: {qrData: 'HC1:....'}, dccData: {dcc...}});
 ```
 
-Decodes a DCC qr code. Will accept inoput as string, image or pdf. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
+Decodes a DCC qr code. Will accept input as string. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
 
 ---
 
 ##### `decodeAndValidateRules()`
 
 ```javascript
-const result = await decodeAndValidateRules({source: {qrData: 'HC1:....'}, ruleCountry: 'IE'});
+const result = await decodeAndValidateRules({source: 'HC1:....', dccData: {dcc...}}, ruleCountry: 'IE'});
 ```
 
-Decodes a DCC qr code an then runs the provided business rules against the DCC data. Will accept inoput as string, image or pdf. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
+Decodes a DCC qr code an then runs the provided business rules against the DCC data. Will accept input as string. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
 
 ---
 

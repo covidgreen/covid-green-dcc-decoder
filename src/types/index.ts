@@ -59,9 +59,3 @@ export type VerificationResult = {
   error?: Error
   wrapperData?: Record<string, unknown>
 }
-
-export type InputSource = {
-  qrData?: string
-  image?: Buffer
-  pdf?: Buffer
-}
