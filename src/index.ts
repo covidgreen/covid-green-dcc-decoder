@@ -103,7 +103,7 @@ const decodeAndValidateRules = async (inputs: {
 }): Promise<VerificationResult> => {
   const result = await decodeOnly(inputs)
 
-  if (result.error) {
+  if (!result || result.error) {
     return result
   }
 

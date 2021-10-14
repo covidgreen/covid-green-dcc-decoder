@@ -173,6 +173,14 @@ describe('Validating QR Codes', () => {
       expect(result).toBeUndefined()
     })
 
+    it('Decode and validate with 0 certs provided', async () => {
+      const result = await decodeAndValidateRules({
+        source: [],
+        dccData: dccDataSet,
+      })
+      expect(result).toBeUndefined()
+    })
+
     it('Decode from a vaccine cert but provide no keys', async () => {
       await expect(
         decodeOnly({
