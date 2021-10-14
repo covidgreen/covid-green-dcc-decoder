@@ -65,7 +65,7 @@ Used to load the dcc config data needed to decode and validate a DCC. Returns th
 ##### `decodeOnly()`
 
 ```javascript
-const result = await decodeOnly({source: {qrData: 'HC1:....'}, dccData: {dcc...}});
+const result = await decodeOnly({source: 'HC1:....', dccData: {dcc...}});
 ```
 
 Decodes a DCC qr code. Will accept input as string. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
@@ -111,7 +111,6 @@ Decodes a DCC qr code an then runs the provided business rules against the DCC d
 
 ## License
 
-Copyright (c) 2021 Department of Justice Ireland
 Copyright (c) The COVID Green Contributors
 
 [Licensed](LICENSE) under the Apache License, Version 2.0 (the "License");
