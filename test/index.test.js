@@ -49,7 +49,7 @@ describe('Validating QR Codes', () => {
   describe('Decode from qr data', () => {
     it('Decode from a vaccine cert ', async () => {
       const result = await decodeOnly({
-        source: VACCINE_CERT_1_OF_2,
+        source: [VACCINE_CERT_1_OF_2],
         dccData: dccDataSet,
       })
 
@@ -65,7 +65,7 @@ describe('Validating QR Codes', () => {
 
     it('Decode from a test rat cert and validate rules', async () => {
       const result = await decodeAndValidateRules({
-        source: TEST_RAT_CERT,
+        source: [TEST_RAT_CERT],
         dccData: dccDataSet,
         ruleCountry: 'IE',
       })
@@ -82,7 +82,7 @@ describe('Validating QR Codes', () => {
 
     it('Decode from a test nat cert', async () => {
       const result = await decodeOnly({
-        source: TEST_NAT_CERT,
+        source: [TEST_NAT_CERT],
         dccData: dccDataSet,
       })
 
@@ -99,7 +99,7 @@ describe('Validating QR Codes', () => {
 
     it('Decode from a recovery cert', async () => {
       const result = await decodeOnly({
-        source: RECOVERY_CERT,
+        source: [RECOVERY_CERT],
         dccData: dccDataSet,
       })
       expect(result.cert).toBeDefined()
@@ -115,7 +115,7 @@ describe('Validating QR Codes', () => {
 
     it('Decode from an RSA signed cert', async () => {
       const result = await decodeOnly({
-        source: RSA_SIGNED,
+        source: [RSA_SIGNED],
         dccData: dccDataSet,
       })
       expect(result.cert).toBeDefined()
@@ -129,10 +129,54 @@ describe('Validating QR Codes', () => {
       expect(result.rawCert.v[0].tg).toEqual('840539006')
     })
 
+    it('Decode with 2 certs provided and ensure lates returned', async () => {
+      const result = await decodeOnly({
+        source: [
+          'HC1:NCFMX1B-N*I0000HHUKXR3G6U12RYKYUOV/9NTFOVN6X9SY7N+DWH95F5L63*TNODRR.7C*J9AHRMG$131T4%RN9DO/UDEL8+LUS79$GGIEA:7O JSMNMO1C2N4-USOMNA1F :6D:51CJFTH*HA2:IU-0G8H.R0+MVW OF-UPFDX8T%U11/LUII/KA- AO.O-%1YZJ29QI70G24PRK6625HGYW8A2521TM69.ANU9A7GH$Y5/L4D24BN0I44+V0KWMN492IQA*J4LT3MPE*90MSKOM MKKHM$Q28+G H1H33BXRPR2WFDD*8TV1CXGYBK/8DJHBMB3YOE*20I-6+H7Q32F8G5AG*Y673R44QH$2IBBP A ERCJDP2HKVVBV2KVQB C%YBOKF:Y6MGQD-2U.KI K2-9:OP8IM3NANTL12SBLS9/6WMDCYR5%8YO4T.VRA7PQRQ/DP-K5JB3EMNQ2SGNQTHS-UBV7W$1.XC 5ORTNI$1CSF6$7UCQ-HD*MFDXU0:1SH2POEZ4G8FW%A5E3',
+          'HC1:NCFMX1EM7YUO000F8CF.OHCAH%JNW0/HRGQ9J8VLFLR+70 9X9D+D4F9U1I6TC9TQF0-2CEAZE1HTHH+1-W88$R7OH.N2RU3FT87IE3549SHVPH31GVCVCCKJAE8L0/9RVXRI6UB.IG/AH9AHLQ7KD8KG/*9V+0IHPI2F REBPE8547-N.QL-N7P 8N24AO9WMMNDKUY9A668MI7DOZZ0M5A/QUJ95GUMDMH%FLXAV%OL1T3EIJ+20VQ758F-TK%%FU6S7LINOEL6IB$FRXJP791%DVI1T%EPWN/.CA31Y6CISC9+AVMTFP2$92%F8$DCVDRAC5 *TDQ1NB0Z34MK3D-0 8H424I44+ON0X3LL21+05$30.P9.DT$9LXAPLBW1M$XP P2QVRY*8ML69-COTH:E5UFD38P2 8IYPY4LFLBDBL 8EY9JYK559KX2BP8NNMEVWQ329C8SH4A*0W+RDAEFQ:1R5GKLMI4VUBPI*ESWQH:RXPE01OZKLWRA.CFOJU.2VCQV6 3 041ASN03 VF',
+        ],
+        dccData: dccDataSet,
+      })
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeUndefined()
+
+      expect(result.cert.nam.gnt).toEqual('MICHAEL')
+      expect(result.cert.v[0].tg).toEqual('COVID-19')
+      expect(result.rawCert.v[0].tg).toEqual('840539006')
+      expect(result.rawCert.v[0].sd).toEqual(2)
+      expect(result.rawCert.v[0].dn).toEqual(2)
+    })
+
+    it('Decode with 2 certs provided and ensure vaccine returns rather than recovery', async () => {
+      const result = await decodeOnly({
+        source: [VACCINE_CERT_1_OF_2, RECOVERY_CERT],
+        dccData: dccDataSet,
+      })
+      expect(result.cert).toBeDefined()
+      expect(result.rawCert).toBeDefined()
+      expect(result.type).toEqual('v')
+      expect(result.error).toBeUndefined()
+      expect(result.ruleErrors).toBeUndefined()
+
+      expect(result.cert.nam.gnt).toEqual('FRED')
+      expect(result.cert.v).toBeDefined()
+    })
+
+    it('Decode with 0 certs provided', async () => {
+      const result = await decodeOnly({
+        source: [],
+        dccData: dccDataSet,
+      })
+      expect(result).toBeUndefined()
+    })
+
     it('Decode from a vaccine cert but provide no keys', async () => {
       await expect(
         decodeOnly({
-          source: VACCINE_CERT_1_OF_2,
+          source: [VACCINE_CERT_1_OF_2],
           dccData: { valueSets: dccDataSet.valueSets },
         })
       ).rejects.toThrowError()
@@ -141,7 +185,7 @@ describe('Validating QR Codes', () => {
     it('Decode from a vaccine cert but provide no valuesets', async () => {
       await expect(
         decodeOnly({
-          source: VACCINE_CERT_1_OF_2,
+          source: [VACCINE_CERT_1_OF_2],
           dccData: { signingKeys: dccDataSet.signingKeys },
         })
       ).rejects.toThrowError()
@@ -150,7 +194,7 @@ describe('Validating QR Codes', () => {
     it('Decode from a vaccine cert but no signing key', async () => {
       const result = await decodeOnly(
         {
-          source: VACCINE_CERT_1_OF_2,
+          source: [VACCINE_CERT_1_OF_2],
           dccData: { signingKeys: [], valueSets: dccDataSet.valueSets },
         },
         true
@@ -164,7 +208,7 @@ describe('Validating QR Codes', () => {
 
     it('Decode a recovery cert, should be no errors', async () => {
       const result = await decodeAndValidateRules({
-        source: RECOVERY_CERT,
+        source: [RECOVERY_CERT],
         ruleCountry: 'IE',
         dccData: dccDataSet,
       })
@@ -179,7 +223,7 @@ describe('Validating QR Codes', () => {
 
     it('Decode with no rules', async () => {
       const result = await decodeAndValidateRules({
-        source: VACCINE_CERT_1_OF_2,
+        source: [VACCINE_CERT_1_OF_2],
         ruleCountry: 'ZZ',
         dccData: dccDataSet,
       })
@@ -194,7 +238,7 @@ describe('Validating QR Codes', () => {
 
     it('Decode with a decode error', async () => {
       const result = await decodeAndValidateRules({
-        source: VACCINE_CERT_1_OF_2,
+        source: [VACCINE_CERT_1_OF_2],
         ruleCountry: 'IE',
         dccData: { signingKeys: [], valueSets: dccDataSet.valueSets },
       })
