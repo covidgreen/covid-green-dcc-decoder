@@ -49,7 +49,7 @@ const findMostRecent = (results: VerificationResult[]): VerificationResult => {
     }
   }
 
-  return latestV || latestR || latestT
+  return latestV || latestR || latestT || results[0]
 }
 
 const decodeOnly = async (inputs: {

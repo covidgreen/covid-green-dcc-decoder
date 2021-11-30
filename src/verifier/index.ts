@@ -1,4 +1,3 @@
-import base45 from 'base45'
 import pako from 'pako'
 import cbor from 'cbor'
 import cose from 'cose-js'
@@ -16,6 +15,9 @@ import { SigningKeys, SigningKey, VerificationResult } from '../types'
 import * as errors from '../types/errors'
 
 import verifySignature from './verify-signature'
+
+// eslint-disable-next-line
+const base45 = require('base45-js')
 
 function getCountry(
   cert: CertificateContent,
@@ -150,13 +152,13 @@ export default async function decodeQR(
   try {
     const qrBase45 = qr.replace('HC1:', '')
     const qrZipped = base45.decode(qrBase45)
+
     const qrCbor = ensureCOSEStructure(Buffer.from(pako.inflate(qrZipped)))
     // We decode the whole cbor
     const { kid, rawCert, country, expiresAt, algo, type, issuedAt } =
       decodeCbor(qrCbor)
 
     const keysToUse = findKeysToValidateAgainst(country, kid, signingKeys)
-
     const wrapperData: Record<string, unknown> = {
       country,
       kid,
