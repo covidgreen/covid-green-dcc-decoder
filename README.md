@@ -40,7 +40,7 @@ import { decodeOnly, loadDCCConfigData } from 'dcc-decoder';
 (async () => {
   const dcc = await loadDCCConfigData('https://url_for_config')
   const result = await decodeOnly({
-          source: 'HC1:....',
+          source: ['HC1:....'],
           dccData: dcc
         })
   if (result.errors) {
@@ -65,7 +65,7 @@ Used to load the dcc config data needed to decode and validate a DCC. Returns th
 ##### `decodeOnly()`
 
 ```javascript
-const result = await decodeOnly({source: 'HC1:....', dccData: {dcc...}});
+const result = await decodeOnly({source: ['HC1:....'], dccData: {dcc...}});
 ```
 
 Decodes a DCC qr code. Will accept input as string. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
@@ -75,7 +75,7 @@ Decodes a DCC qr code. Will accept input as string. Returns a promise which incl
 ##### `decodeAndValidateRules()`
 
 ```javascript
-const result = await decodeAndValidateRules({source: 'HC1:....', dccData: {dcc...}}, ruleCountry: 'IE'});
+const result = await decodeAndValidateRules({source: ['HC1:....'], dccData: {dcc...}}, ruleCountry: 'IE'});
 ```
 
 Decodes a DCC qr code an then runs the provided business rules against the DCC data. Will accept input as string. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
