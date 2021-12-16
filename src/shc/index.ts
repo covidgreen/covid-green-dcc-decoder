@@ -1,6 +1,7 @@
 import {
   CertificateContent,
   CERT_TYPE,
+  SigningKeys,
   VaccinationGroup,
   VerificationResult,
 } from '../'
@@ -14,14 +15,26 @@ import {
   verifySignature,
 } from './parser'
 
-function convertShc(payload): CertificateContent {
-  const obj = payload.vc.credentialSubject.fhirBundle
-  const doses = obj.entry.flatMap(e =>
-    e.resource.resourceType.toLowerCase() === 'immunization' ? [e.resource] : []
-  )
-  const lastDose = doses[doses.length - 1]
+type EntryType = 'Patient' | 'Immunization'
 
-  const dob: string = obj.entry[0].resource.birthDate
+function getEntries(payload, type: EntryType) {
+  return payload.vc.credentialSubject.fhirBundle.entry.flatMap(e =>
+    e.resource.resourceType === type ? [e.resource] : []
+  )
+}
+
+function convertShc(payload, country: string): CertificateContent {
+  const [patient] = getEntries(payload, 'Patient')
+
+  const fn: string = patient.name[0].family
+  const gn: string = patient.name[0].given.join(' ')
+  const fnt: string = fn // TODO: how to convert this
+  const gnt: string = gn // TODO: how to convert this
+
+  const dob: string = patient.birthDate
+
+  const doses = getEntries(payload, 'Immunization')
+  const lastDose = doses[doses.length - 1]
 
   const vax = vaccineCodes[lastDose.vaccineCode.coding[0].code]
 
@@ -32,14 +45,9 @@ function convertShc(payload): CertificateContent {
   const dn = doses.length
   const sd = 2
   const dt: string = lastDose.occurrenceDateTime
-  const co = 'US'
+  const co = country
   const is = payload.iss
   const ci = ''
-
-  const fn: string = obj.entry[0].resource.name[0].family
-  const gn: string = obj.entry[0].resource.name[0].given.join(' ')
-  const fnt: string = fn // TODO: how to convert this
-  const gnt: string = gn // TODO: how to convert this
 
   const v: VaccinationGroup = { tg, vp, mp, dn, sd, dt, co, is, ci, ma }
 
@@ -58,7 +66,10 @@ function convertShc(payload): CertificateContent {
  * @param {string} rawSHC The raw 'shc://' string (from a QR code)
  * @return The header, payload and verification result of the SHC
  */
-export const decodeShc = async (rawSHC, keys): Promise<VerificationResult> => {
+export const decodeShc = async (
+  rawSHC: string,
+  keys: SigningKeys
+): Promise<VerificationResult> => {
   const jwt = numericShcToJwt(rawSHC)
   const splitJwt = jwt.split('.')
   const header = parseJwtHeader(splitJwt[0])
@@ -73,8 +84,10 @@ export const decodeShc = async (rawSHC, keys): Promise<VerificationResult> => {
     return { error: errors.invalidSignature() }
   }
 
+  const country = key.country?.split('-')[0] || key.country || ''
+
   return {
-    rawCert: convertShc(payload),
+    rawCert: convertShc(payload, country),
     type: CERT_TYPE.VACCINE,
   }
 }
