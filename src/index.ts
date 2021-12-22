@@ -1,3 +1,4 @@
+import { decodeShc } from './shc'
 import { ValueSetsComputed, RuleSet } from './rules-runner/types'
 import decodeQR from './verifier'
 import { runRuleSet } from './rules-runner'
@@ -67,7 +68,12 @@ const decodeOnly = async (inputs: {
   const results: VerificationResult[] = []
 
   for (const source of inputs.source) {
-    const result = await decodeQR(source, dcc.signingKeys)
+    let result
+    if (source.startsWith('shc:/')) {
+      result = await decodeShc(source, dcc.signingKeys)
+    } else {
+      result = await decodeQR(source, dcc.signingKeys)
+    }
 
     if (result.rawCert) {
       result.cert = populateCertValues(

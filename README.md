@@ -2,7 +2,7 @@
 
 # Digital Covid Ceritifcate Decoder
 
-A node module for decoding DCC certs, validaiong signature and optionally running country specific business rules
+A node module for decoding DCC certs, validating signature and optionally running country specific business rules
 
 For more on DCC see:
 - https://github.com/ehn-dcc-development
@@ -78,7 +78,7 @@ Decodes a DCC qr code. Will accept input as string. Returns a promise which incl
 const result = await decodeAndValidateRules({source: ['HC1:....'], dccData: {dcc...}}, ruleCountry: 'IE'});
 ```
 
-Decodes a DCC qr code an then runs the provided business rules against the DCC data. Will accept input as string. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
+Decodes a DCC or Smart Health qr code and then runs the provided business rules against the DCC data. Will accept input as string. Returns a promise which includes the raw cert data, populated cert, cert type and any error.
 
 ---
 

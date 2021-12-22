@@ -67,10 +67,10 @@ export type VaccinationGroup = {
   ma: string
 
   /** Dose Number */
-  dn: string
+  dn: number
 
   /** Total Series of Doses */
-  sd: string
+  sd: number
 
   /** Date of Vaccination */
   dt: string
